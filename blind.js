@@ -81,7 +81,7 @@ loadState().then(() => {
 
   blindService.getCharacteristic(Characteristic.TargetPosition)
     .on('set', async (value, callback) => {
-      console.log(`[${new Date().toISOString()}] Setting North Blind to ${value}%`);
+      console.log(`[${new Date().toISOString()}] Setting ${MyAccessoryName} to ${value}%`);
       const endpoint = 'http://127.0.0.1:8087/picode/';
       let rawkey, lastpart, newPosition;
 
