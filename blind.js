@@ -3,6 +3,10 @@ const fs = require('fs').promises;
 const path = require('path');
 // Edit this and insert the serial number from your remote in binary:
 const MySerialNumber = "0001000100010001000100010001"
+// Change these as needed:
+const MyUserName = "1A:00:CC:19:01:FE"
+const MyPINCode ="031-45-159"
+const MyAccessoryName ="Blind"
 
 const stateFile = path.join(__dirname, 'blind-state.json');
 let currentPosition = 100; // Default to open
@@ -31,7 +35,7 @@ async function saveState() {
 
 // Load state on startup
 loadState().then(() => {
-  const accessory = new Accessory('North Blind', uuid.generate('hap.blind2'));
+  const accessory = new Accessory(MyAccessoryName, uuid.generate('hap.blind2'));
 
  // Set AccessoryInformation
   const accessoryInfo = accessory.getService(Service.AccessoryInformation) ||
@@ -39,11 +43,11 @@ loadState().then(() => {
 
   accessoryInfo
     .setCharacteristic(Characteristic.Manufacturer, 'Tim Etherington')
-    .setCharacteristic(Characteristic.Model, 'North Blind')
+    .setCharacteristic(Characteristic.Model, MyAccessoryName)
     .setCharacteristic(Characteristic.SerialNumber, 'NCC1701B')
     .setCharacteristic(Characteristic.FirmwareRevision, '1.5');
 
-  const blindService = accessory.addService(Service.WindowCovering, 'North Blind');
+  const blindService = accessory.addService(Service.WindowCovering, MyAccessoryName);
 
   // Blind control constants
   const rawserialnum = MySerialNumber;
@@ -142,11 +146,11 @@ loadState().then(() => {
     });
 
   accessory.publish({
-    username: "1A:00:CC:19:01:FE",
-    pincode: "031-45-159",
+    username: MySerialNumber,
+    pincode: MyPINCode,
     port: 47130,
     category: Categories.WINDOW_COVERING,
   });
 
-  console.log(`[${new Date().toISOString()}] Blind Accessory Version: 1.0, PIN: 031-45-159`);
+  console.log(`[${new Date().toISOString()}] ${MyAccessoryName} Version: 1.5, PIN: ${MyPINCode}`);
 });
