@@ -146,7 +146,7 @@ loadState().then(() => {
     });
 
   accessory.publish({
-    username: MySerialNumber,
+    username: MyUserName,
     pincode: MyPINCode,
     port: 47130,
     category: Categories.WINDOW_COVERING,
