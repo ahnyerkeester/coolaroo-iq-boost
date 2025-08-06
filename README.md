@@ -5,6 +5,13 @@ Coolaroo Solar Motorized Shades use a DC3100 433mHz remote to raise or lower the
 
 This project is neither endorsed by nor associated with Coolaroo in any way. Use at your own risk.
 
+# Dependancies
+
+[raspicode](https://github.com/latchdevel/raspicode)</br>
+[hap-nodejs](https://github.com/homebridge/HAP-NodeJS)</br>
+node-fetch</br>
+pm2
+
 # Prerequisites
 
 Obviously, you need to have Coolaroo Solar Motorized Shades installed. Additionally, you'll need:
@@ -62,7 +69,7 @@ With the ethernet port down and the SD Card at the top, the top portion of the G
 •  •<br>
 •  Data<br>
 
-# Set Up Software
+# Install Software
 
 Image your SD Card with the latest version of Bookworm including the desktop environment.
 
@@ -70,108 +77,70 @@ Image your SD Card with the latest version of Bookworm including the desktop env
 
 `sudo apt-get -y update && sudo apt-get -y upgrade`
 
-## Disable wlan0 power save mode
+## Get Setup
 
-`sudo nano /etc/systemd/system/wifi-powersave-off.service`
-
-## Paste the following
-```
-[Unit]
-Description=Disable WiFi Power Save
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/sbin/iw dev wlan0 set power_save off
-RemainAfterExit=true
-
-[Install]
-WantedBy=multi-user.target
-```
-## Enable the service
-
-`sudo systemctl enable wifi-powersave-off.service`
-
-## Isolate one CPU core
-
-`sudo nano /boot/firmware/cmdline.txt`
-
-## Add this to the end of the one line of text:
-
-`isolcpus=3`
-
-## Reboot and verify:
-
-`sudo reboot`
-```
-iw dev wlan0 get power_save
-cat /sys/devices/system/cpu/isolated
-```
-Should say power save is off and return the number 3.
-
-`sudo raspi-config`
-
-Under Interface Options, enable VNC.
-
-## Install raspicode
-This will control the transmitter
-```
-git clone https://github.com/latchdevel/raspicode.git
-cd raspicode/wiringpiook
-python3 setup.py develop --user
-```
-
-## Install hap-nodejs
-This is how we will connect to HomeKit
+**IT IS NOT NECESSARY** to clone this repository, this setup script will get the files you need. Use the setup file instead:
 
 ```
-cd ~
-sudo apt-get install -y npm
-sudo npm i hap-nodejs
-sudo npm install -g pm2@latest
+curl -O https://raw.githubusercontent.com/ahnyerkeester/cooleroo-iq-boost/main/setup.sh
+chmod +x setup.sh
+./setup.sh
+```
+# Configure For Your Setup
+
+All the software should now be installed. We just need to personalize the setup up for your equipment.
+You should have gotten the serial number for your remote by now. You need to put add it to the HomeKit accessory:
+
+`nano ~/homekit-project/blind.js`
+
+Near the top you'll see:
+
+```
+// Edit this and insert the serial number from your remote in binary:
+const MySerialNumber = "0001000100010001000100010001"
 ```
 
-# Set Up Shady App
+Replace the default serial number with the one you read from your remote. Make sure it is 8 bytes (24 bits) long.
+Save the file and restart it to load the new configuration:
+
+`pm2 restart all`
+
+Now go to your iPhone and launch the Home app. Hit the **+** at the top and select **Add Accessory**.
+Next, select **More options...**
+
+If everything has worked, you should see:</br>
+**Select an Accessory**</br>
+**to Add to My Home**</br>
+and your shade should be listed there.
+
+The default add code for the accessory is 0314-5159
+
+# Adding More Shades
+
+If you have more than one shade, like I do, you'll need to have a seperate accessory for each one. That will also mean you'll need to set up each blind on its own remote and get the serial numbers for each remote. You should start by deciding what you will call each blind. Mine are blind north and blind south.
+
+To add your second shade:
 
 ```
-cd ~
-mkdir homekit-project
-cd /home/pi/homekit-project
-sudo npm install node-fetch
+cd ~/homekit-project
+cp blind.js blind2.js
+nano blind2.js
 ```
+Here you'll need to edit the serial number as above. But you'll also have to change a few other things. Fortunatly, most are at the very end of the file:
+```
+  accessory.publish({
+    username: "1A:00:CC:19:01:FE",
+    pincode: "031-45-159",
+    port: 47130,
+    category: Categories.WINDOW_COVERING,
+  });
 
-## On host computer:
+  console.log(`[${new Date().toISOString()}] Blind Accessory Version: 1.5, PIN: 031-45-159`);
+});
+```
+Change the username. This is hexidecimal and must have the colons where they are. You can use numbers from 0 to 9 and letters A to F. It doesn't have to be a dramatic change, one character will work.
 
+For clarity sake, change the pincode. These are regular decimal nubmers.
 
-## Manually start them
+And finally, so that you'll see the correct information in the log, 
 
-pm2 start homekit-project/ecosystem.config.js
-
-## Optional:
-pm2 list
-
-pm2 logs
-## Should show no errors
-
-ctrl-c
-
-## To start them on boot:
-
-pm2 save
-pm2 startup
-
-## This will give you a sudo env command to run. Copy and paste
-##  Mine looked like this:
-
-sudo env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u pi --hp /home/pi
-
-## Reboot and we'll make sure it is working
-## after reboot, run
-
-pm2 list
-
-
-#Add to HomeKit
-
-Code 031-45-159 blind
-Code 031-45-160 sblind
