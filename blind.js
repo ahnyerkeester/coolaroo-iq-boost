@@ -4,8 +4,8 @@ const path = require('path');
 // Edit this and insert the serial number from your remote in binary:
 const MySerialNumber = "0001000100010001000100010001"
 // Change these as needed:
-const MyUserName = "1A:00:CC:19:01:FE"
-const MyPINCode ="031-45-159"
+const MyUserName = "1A:00:CC:19:F1:FE"
+const MyPINCode ="031-45-152"
 const MyAccessoryName ="Blind"
 
 const stateFile = path.join(__dirname, 'blind-state.json');
