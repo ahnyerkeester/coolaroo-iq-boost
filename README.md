@@ -1,9 +1,10 @@
 # Coolaroo IQ Boost
 Make Coolaroo Solar Motorized Shade SmartHome Compatible
 
-Coolaroo Solar Motorized Shades use a DC3100 433mHz remote to raise or lower the shades. This repository forms a bridge between the remote and the smart home by replicating the remote on a Raspberry Pi.
+Coolaroo Solar Motorized Shades use a DC3100 433MHz remote to raise or lower the shades. This repository replicates the remote and on a Raspberry Pi and makes it accessable to Apple HomeKit.
 
-This project is neither endorsed by nor associated with Coolaroo in any way. Use at your own risk.
+>[!WARNING]
+> This project is neither endorsed by nor associated with Coolaroo in any way. Use at your own risk.
 
 # Dependancies
 
@@ -45,7 +46,7 @@ After you install the shades, you have to marry them to the remote. I found Cool
 
 ## Capture the Remote Control Codes
 
-This is a bit tricky to do. I recommend using a Flipper Zero. Once I understood it, it was pretty straight forward. These videos were helpful:
+This is the tricky bit. I recommend using a Flipper Zero. Once I understood it, it was pretty straight forward. These videos were helpful:
 
 [https://www.youtube.com/watch?v=jNi-KlFTVkw](https://www.youtube.com/watch?v=jNi-KlFTVkw)
 
@@ -53,13 +54,13 @@ This is a bit tricky to do. I recommend using a Flipper Zero. Once I understood 
 
 [https://www.youtube.com/watch?v=r9pXts8KhtA](https://www.youtube.com/watch?v=r9pXts8KhtA)
 
-What you need is the serial number of the remote. You'll need to translate the hexidecimal code it records into binary. Once you do, the first three bytes (24 ones and zeros) represents the serial number. We'll build the rest of the code in the apps.
+What you need is the serial number of the remote. You'll need to translate the hexidecimal code it records into binary. Once you do, the first three bytes (24 ones and zeros) represents the serial number. We'll build the rest of the code are standard and in the accessory.
 
 ## Connect the 433MHz Transmitter
 
 Depending on the transmitter you bought, you may have to do some soldering. If the transmitter already has pins installed, simple female-to-female jumpers will work.
 
-Connect the V+ to Pin 2, GND to pin 6 and Data to pin 12.
+Connect the V<sub>CC</sub> to Pin 2, GND to pin 6 and DATA to pin 12.
 With the ethernet port down and the SD Card at the top, the top portion of the GPIO port should look like this:
 
 •  V<sub>CC</sub><br>
@@ -71,25 +72,28 @@ With the ethernet port down and the SD Card at the top, the top portion of the G
 
 # Install Software
 
-Image your SD Card with the latest version of Bookworm including the desktop environment.
+Image your SD Card with the latest version of Bookworm and boot your Raspberry Pi.
 
-## Prep the Raspberr Pi
+## Prep the Raspberry Pi
 
 `sudo apt-get -y update && sudo apt-get -y upgrade`
 
 ## Get Setup
 
 > [!IMPORTANT]
-> IT IS NOT NECESSARY to clone this repository, this setup script will get the files you need. Use the setup file instead:
+> IT IS NOT NECESSARY to clone this repository, this setup script will get the files you need.
+
+Get and run the setup file:
 
 ```
 curl -O https://raw.githubusercontent.com/ahnyerkeester/coolaroo-iq-boost/main/setup.sh
 chmod +x setup.sh
 ./setup.sh
 ```
+
 # Configure For Your Setup
 
-All the software should now be installed. We just need to personalize the setup up for your equipment.
+All the software should now be installed. We just need to localize the setup up for your equipment.
 You should have gotten the serial number for your remote by now. You need to put add it to the HomeKit accessory:
 
 `nano ~/homekit-project/blind.js`
@@ -106,7 +110,7 @@ Save the file and restart it to load the new configuration:
 
 `pm2 restart all`
 
-Now go to your iPhone and launch the Home app. Hit the **+** at the top and select **Add Accessory**.
+On your iPhone, launch the Home app. Hit the **+** at the top and select **Add Accessory**.
 Next, select **More options...**
 
 If everything has worked, you should see:
