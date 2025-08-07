@@ -16,7 +16,7 @@ pm2
 
 Obviously, you need to have Coolaroo Solar Motorized Shades installed. Additionally, you'll need:
 
-- A Raspbery Pi 4 or higher
+- A Raspbery Pi 4 or higher (**NOTE:** a Raspberry Pi Zero will not work in this application.)
 - A compatible 16GB SD Card
 - A USB-C power adapter
 - A 433MHz transmitter that is OOK compatible (there are tons on Amazon and other places)
@@ -25,11 +25,11 @@ Obviously, you need to have Coolaroo Solar Motorized Shades installed. Additiona
 
 ## Set up Coolaroo Solar Motorized Shades
 
-After you install the shades, you have to marry them to the remote. I found Coolaroo's instructions confusing. Here's a summary of the steps:
+After you install the shades, you have to marry them to the remote. I found Coolaroo's instructions confusing. Here's a clearer listing of the steps:
 
-**NOTES** 
-On the DC3100, you have to remove the back cover to get to the programming button. You may have to hold the battery in too.
-The program button on the motor unit is near the antenna and is flush. I used a small screwdriver to push it.
+> [!NOTE]
+> - On the DC3100, you have to remove the back cover to get to the programming button. You may have to hold the battery in too.
+> - The program button on the motor unit is near the antenna and is flush. I used a small screwdriver to push it.
 
 1. Press and hold the **Motor Program Button** until the motor **rotates 4 times** and **beeps**.
 2. Press and hold the **Motor Program Button** until the motor **rotates once** and **beeps**.
@@ -62,12 +62,12 @@ Depending on the transmitter you bought, you may have to do some soldering. If t
 Connect the V+ to Pin 2, GND to pin 6 and Data to pin 12.
 With the ethernet port down and the SD Card at the top, the top portion of the GPIO port should look like this:
 
-•  V+<br>
+•  V<sub>CC</sub><br>
 •  •<br>
 •  GND<br>
 •  •<br>
 •  •<br>
-•  Data<br>
+•  DATA<br>
 
 # Install Software
 
@@ -79,7 +79,8 @@ Image your SD Card with the latest version of Bookworm including the desktop env
 
 ## Get Setup
 
-**IT IS NOT NECESSARY** to clone this repository, this setup script will get the files you need. Use the setup file instead:
+> [!IMPORTANT]
+> IT IS NOT NECESSARY to clone this repository, this setup script will get the files you need. Use the setup file instead:
 
 ```
 curl -O https://raw.githubusercontent.com/ahnyerkeester/coolaroo-iq-boost/main/setup.sh
@@ -108,16 +109,18 @@ Save the file and restart it to load the new configuration:
 Now go to your iPhone and launch the Home app. Hit the **+** at the top and select **Add Accessory**.
 Next, select **More options...**
 
-If everything has worked, you should see:</br>
-**Select an Accessory**</br>
-**to Add to My Home**</br>
+If everything has worked, you should see:
+
+> **Select an Accessory**</br>
+>  **to Add to My Home**</br>
+
 and your shade should be listed there.
 
-The default add code for the accessory is 0314-5159
+The default add code for the accessory is 0314-5152
 
 # Adding More Shades
 
-If you have more than one shade, like I do, you'll need to have a seperate accessory for each one. That will also mean you'll need to set up each blind on its own remote and get the serial numbers for each remote. You should start by deciding what you will call each blind. Mine are blind north and blind south.
+If you have more than one shade, like I do, you'll need to have a seperate accessory for each one. That will also mean you'll need to set up each blind on its own remote and get the serial numbers for each remote. You should start by deciding what you will call each blind. Mine are "blind north" and "blind south".
 
 To add your second shade:
 
@@ -126,21 +129,39 @@ cd ~/homekit-project
 cp blind.js blind2.js
 nano blind2.js
 ```
-Here you'll need to edit the serial number as above. But you'll also have to change a few other things. Fortunatly, most are at the very end of the file:
+Here you'll need to edit the serial number as above. But you'll also have to change a few other things. They're all at the top of the file:
 ```
-  accessory.publish({
-    username: "1A:00:CC:19:01:FE",
-    pincode: "031-45-159",
-    port: 47130,
-    category: Categories.WINDOW_COVERING,
-  });
-
-  console.log(`[${new Date().toISOString()}] Blind Accessory Version: 1.5, PIN: 031-45-159`);
-});
+// Edit this and insert the serial number from your remote in binary:
+const MySerialNumber = "0001000100010001000100010001"
+// Change these as needed:
+const MyUserName = "1A:00:CC:19:F1:FE"
+const MyPINCode ="031-45-152"
+const MyAccessoryName ="Blind"
 ```
 Change the username. This is hexidecimal and must have the colons where they are. You can use numbers from 0 to 9 and letters A to F. It doesn't have to be a dramatic change, one character will work.
 
 For clarity sake, change the pincode. These are regular decimal nubmers.
 
-And finally, so that you'll see the correct information in the log, 
+Finally, change the accessory name.
 
+Save the file then:
+
+`nano ecosystem.config.js`
+
+You'll need to duplicate this section:
+```
+    {
+      name: 'blind-accessory',
+      script: './homekit-project/blind.js',
+      exec_mode: 'fork',
+      instances: 1,
+      watch: false,
+      max_memory_restart: '150M',
+      env: { NODE_ENV: 'production' },
+    },
+```
+Change the `script: './homekit-project/blind.js',` to `blind2.js` or whatever you named the new accessory file.
+
+Restart the accessories and they should show up in the Home app:
+
+`pm2 restart all`
