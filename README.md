@@ -82,7 +82,7 @@ Image your SD Card with the latest version of Bookworm including the desktop env
 **IT IS NOT NECESSARY** to clone this repository, this setup script will get the files you need. Use the setup file instead:
 
 ```
-curl -O https://raw.githubusercontent.com/ahnyerkeester/cooleroo-iq-boost/main/setup.sh
+curl -O https://raw.githubusercontent.com/ahnyerkeester/coolaroo-iq-boost/main/setup.sh
 chmod +x setup.sh
 ./setup.sh
 ```
