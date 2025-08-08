@@ -54,7 +54,7 @@ This is the tricky bit. I recommend using a Flipper Zero. Once I understood it, 
 
 [https://www.youtube.com/watch?v=r9pXts8KhtA](https://www.youtube.com/watch?v=r9pXts8KhtA)
 
-What you need is the serial number of the remote. You'll need to translate the hexidecimal code it records into binary. Once you do, the first three bytes (24 ones and zeros) represents the serial number. We'll build the rest of the code are standard and in the accessory.
+What you need is the serial number of the remote. You'll need to translate the hexidecimal code it records into binary. Once you do, the first three bytes (24 ones and zeros) represent the serial number. The rest of the code is standard and we'll build in the accessory.
 
 ## Connect the 433MHz Transmitter
 
