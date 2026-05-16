@@ -32,13 +32,16 @@ echo "************************************************"
 echo "Manual step required:"
 echo "Open another terminal window and ssh into this device."
 echo "In that other terminal window:"
+echo
 echo "sudo nano /boot/firmware/cmdline.txt"
+echo
 echo "Add the following to the end of the single line in that file."
 echo "    isolcpus=3"
 echo "************************************************"
 read -p "Press Enter to continue after you have finished editing..."
 
 # 3. Clone and install raspicode software
+
 if [ ! -d raspicode ]; then
   git clone https://github.com/latchdevel/raspicode.git
 fi
@@ -63,11 +66,11 @@ sudo npm install node-fetch
 cd /home/pi
 git clone https://github.com/ahnyerkeester/coolaroo-iq-boost.git temp-repo
 cp temp-repo/ecosystem.config.js homekit-project/
-cp temp-repo/blind.js homekit-project/
+cp temp-repo/blindaccessory.js homekit-project/
+cp temp-repo/RFQueue.js homekit-project/
 rm -rf temp-repo
 
 # 7. Configure to launch on reboot
-
 pm2 start /home/pi/homekit-project/ecosystem.config.js
 pm2 save
 # Generate the startup command
@@ -75,10 +78,16 @@ PM2_CMD=$(pm2 startup systemd -u pi --hp /home/pi | grep "sudo" | tail -1)
 # Execute the startup command
 eval $PM2_CMD
 
+# Done.
 echo
 echo "Setup complete! Please reboot and verify with:"
-echo "  iw dev wlan0 get power_save"
-echo "  cat /sys/devices/system/cpu/isolated"
+echo
+echo " iw dev wlan0 get power_save"
+echo " cat /sys/devices/system/cpu/isolated"
+echo
 echo "The last command should return '3' if CPU isolation is set."
+echo
 echo "Also after reboot, you can check that the accessories are running with:"
-echo "  pm2 list"
+echo " pm2 list"
+echo "Also after reboot, you should be able to add your blind to"
+echo "your Apple Home."
