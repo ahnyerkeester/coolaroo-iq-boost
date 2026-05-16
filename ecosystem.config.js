@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'blind-accessory',
-      script: './homekit-project/blind.js',
+      name: 'blind',
+      script: '/home/pi/homekit-project/blindaccessory.js',
       exec_mode: 'fork',
       instances: 1,
       watch: false,
