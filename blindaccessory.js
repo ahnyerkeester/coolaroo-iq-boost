@@ -6,7 +6,7 @@
 // FIXED: HomeKit "Closing..." ghosting and icon state resolution
 //
 
-const { Accessory, Service, Characteristic, uuid, Categories } = require('hap-nodejs');
+const { Accessory, Service, Characteristic, uuid, Categories, HAPStorage } = require('hap-nodejs');
 const fs = require('fs').promises;
 const path = require('path');
 const RFQueue = require('./RFQueue');
