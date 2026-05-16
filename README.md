@@ -70,102 +70,140 @@ With the ethernet port down and the SD Card at the top, the top portion of the G
 •  •<br>
 •  DATA<br>
 
+# What's New in version 2.0?
+ 
+- **Command queue** — `RFQueue.js` ensures only one RF signal is sent at a time. If you trigger multiple shades simultaneously, commands are queued and executed in order with a small gap between them to prevent signal collisions.
+- **Improved HomeKit state handling** — Fixes the "Closing…" spinner that would persist in the Home app after a command completed. Current position, target position, and position state are now updated in the correct sequence.
+- **Automatic persistence isolation** — Each accessory automatically creates its own `persist-<name>` folder for HAP storage, derived from its `name` in the config. No manual path management needed.
+- **Cleaner configuration** — All per-accessory settings are consolidated into a single `config` block at the top of `blindaccessory.js`, making it much easier to duplicate and customize for additional shades.
+
 # Install Software
-
+ 
 Image your SD Card with the latest version of Bookworm and boot your Raspberry Pi.
-
-## Prep the Raspberry Pi
-
+ 
+## Update the Raspberry Pi
+ 
 `sudo apt-get -y update && sudo apt-get -y upgrade`
-
+ 
 ## Get Setup
-
+ 
 > [!IMPORTANT]
-> IT IS NOT NECESSARY to clone this repository, this setup script will get the files you need.
-
+> IT IS NOT NECESSARY to clone this repository. The setup script will get the files you need.
+ 
 Get and run the setup file:
-
-```
+ 
+```bash
 curl -O https://raw.githubusercontent.com/ahnyerkeester/coolaroo-iq-boost/main/setup.sh
 chmod +x setup.sh
 ./setup.sh
 ```
-
+ 
 # Configure For Your Setup
-
-All the software should now be installed. We just need to localize the setup up for your equipment.
-You should have gotten the serial number for your remote by now. You need to put add it to the HomeKit accessory:
-
-`nano ~/homekit-project/blind.js`
-
-Near the top you'll see:
-
+ 
+All the software should now be installed. You just need to localize the setup for your equipment.
+You should have gotten the serial number for your remote by now. Open the accessory file to configure it:
+ 
+`nano ~/homekit-project/blindaccessory.js`
+ 
+Near the top you'll see a configuration block:
+ 
+```js
+const config = {
+  name: "The Blind",                     // Change this for each accessory
+  model: "The Blind",                    // Change this for each accessory
+  serial: "NCC1701",                     // Change this for each accessory
+  firmware: "2.0",
+  manufacturer: "Tim Etherington",
+  username: "1A:00:CC:XX:XX:XX",         // Change this for each accessory
+  pincode: "031-45-159",
+  port: 47129,                           // Change this for each accessory
+  uuidType: "hap.blind",                 // Change this for each accessory (e.g., hap.blind2)
+  stateFileName: 'the-blind-state.json', // Change this for each accessory
+ 
+  // RF Constants
+  serialNum: "XXXXXXXXXXXXXXXXXXXXXXXX",  // Change this for each accessory
+  channel: "0000",
+  channelConst: "0101"
+};
 ```
-// Edit this and insert the serial number from your remote in binary:
-const MySerialNumber = "0001000100010001000100010001"
-```
-
-Replace the default serial number with the one you read from your remote. Make sure it is 8 bytes (24 bits) long.
-Save the file and restart it to load the new configuration:
-
+ 
+Fill in the values marked **Change this for each accessory**:
+ 
+- **name / model** — A friendly name for this shade (e.g., `"Blind North"`)
+- **serial** — Any unique identifier you like
+- **username** — A unique MAC-style address in `XX:XX:XX:XX:XX:XX` format
+- **pincode** — The HomeKit pairing code (default `031-45-159`)
+- **port** — A unique port number for this accessory
+- **uuidType** — A unique string to generate the accessory UUID (e.g., `"hap.blind"`, `"hap.blind2"`)
+- **stateFileName** — A unique filename to persist the blind's position (e.g., `"blind-north-state.json"`)
+- **serialNum** — The 24-bit binary serial number you captured from your remote
+Save the file and restart to load the new configuration:
+ 
 `pm2 restart all`
-
+ 
 On your iPhone, launch the Home app. Hit the **+** at the top and select **Add Accessory**.
 Next, select **More options...**
-
+ 
 If everything has worked, you should see:
-
-> **Select an Accessory**</br>
->  **to Add to My Home**</br>
-
+> **Select an Accessory**  
+> **to Add to My Home**
+ 
 and your shade should be listed there.
-
-The default add code for the accessory is 0314-5152
-
+ 
+The default pairing code for the accessory is **031-45-159**
+ 
 # Adding More Shades
-
-If you have more than one shade, like I do, you'll need to have a seperate accessory for each one. That will also mean you'll need to set up each blind on its own remote and get the serial numbers for each remote. You should start by deciding what you will call each blind. Mine are "blind north" and "blind south".
-
-To add your second shade:
-
-```
+ 
+If you have more than one shade, you'll need a separate accessory file for each one. Each shade must also be paired to its own remote so you can capture a unique serial number. Start by deciding what you'll call each shade (e.g., "Blind North" and "Blind South").
+ 
+To add a second shade:
+ 
+```bash
 cd ~/homekit-project
-cp blind.js blind2.js
+cp blindaccessory.js blind2.js
 nano blind2.js
 ```
-Here you'll need to edit the serial number as above. But you'll also have to change a few other things. They're all at the top of the file:
+ 
+Edit the `config` block at the top. Every field marked **Change this for each accessory** must be unique across all your accessory files:
+ 
+```js
+const config = {
+  name: "Blind South",
+  model: "Blind South",
+  serial: "NCC1702",
+  username: "1A:00:CC:XX:XX:XY",         // Must differ from your first accessory
+  pincode: "031-45-160",                  // Must differ from your first accessory
+  port: 47130,                            // Must differ from your first accessory
+  uuidType: "hap.blind2",                // Must differ from your first accessory
+  stateFileName: 'blind-south-state.json',
+ 
+  serialNum: "XXXXXXXXXXXXXXXXXXXXXXXX",  // This shade's binary serial number
+  channel: "0000",
+  channelConst: "0101"
+};
 ```
-// Edit this and insert the serial number from your remote in binary:
-const MySerialNumber = "0001000100010001000100010001"
-// Change these as needed:
-const MyUserName = "1A:00:CC:19:F1:FE"
-const MyPINCode ="031-45-152"
-const MyAccessoryName ="Blind"
+ 
+Save the file, then open `ecosystem.config.js`:
+ 
+`nano ~/homekit-project/ecosystem.config.js`
+ 
+Duplicate the blind entry and point it at the new file:
+ 
+```js
+{
+  name: 'blind2',
+  script: '/home/pi/homekit-project/blind2.js',
+  exec_mode: 'fork',
+  instances: 1,
+  watch: false,
+  max_memory_restart: '150M',
+  env: { NODE_ENV: 'production' },
+},
 ```
-Change the username. This is hexidecimal and must have the colons where they are. You can use numbers from 0 to 9 and letters A to F. It doesn't have to be a dramatic change, one character will work.
-
-For clarity sake, change the pincode. These are regular decimal nubmers.
-
-Finally, change the accessory name.
-
-Save the file then:
-
-`nano ecosystem.config.js`
-
-You'll need to duplicate this section:
-```
-    {
-      name: 'blind-accessory',
-      script: './homekit-project/blind.js',
-      exec_mode: 'fork',
-      instances: 1,
-      watch: false,
-      max_memory_restart: '150M',
-      env: { NODE_ENV: 'production' },
-    },
-```
-Change the `script: './homekit-project/blind.js',` to `blind2.js` or whatever you named the new accessory file.
-
-Restart the accessories and they should show up in the Home app:
-
+ 
+Restart and both accessories will appear in the Home app:
+ 
 `pm2 restart all`
+ 
+> [!NOTE]
+> `RFQueue.js` is a shared singleton. All your accessory files load the same instance, so RF commands from multiple shades are automatically queued and will never collide.
