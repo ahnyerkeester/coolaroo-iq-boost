@@ -42,6 +42,7 @@ read -p "Press Enter to continue after you have finished editing..."
 
 # 3. Clone and install raspicode software
 
+apt install python3-setuptools python3-flask
 if [ ! -d raspicode ]; then
   git clone https://github.com/latchdevel/raspicode.git
 fi
