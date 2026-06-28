@@ -46,7 +46,7 @@ if [ ! -d raspicode ]; then
   git clone https://github.com/latchdevel/raspicode.git
 fi
 cd raspicode/wiringpiook
-python3 setup.py develop --user
+python3 -m pip install --user -e .
 cd ~
 
 # 4. Install npm and Node.js packages
