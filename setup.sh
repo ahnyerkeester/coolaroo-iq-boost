@@ -1,30 +1,9 @@
 #!/bin/bash
 set -e
 
-# 1. Create WiFi Power Save Off systemd service
-SERVICE_FILE="/etc/systemd/system/wifi-powersave-off.service"
-if [ ! -f "$SERVICE_FILE" ]; then
-  echo "Creating wifi-powersave-off systemd service..."
-  sudo tee "$SERVICE_FILE" > /dev/null <<EOF
-[Unit]
-Description=Disable WiFi Power Save
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/sbin/iw dev wlan0 set power_save off
-RemainAfterExit=true
-
-[Install]
-WantedBy=multi-user.target
-EOF
-  sudo systemctl daemon-reload
-  sudo systemctl enable wifi-powersave-off.service
-  sudo systemctl start wifi-powersave-off.service
-  echo "WiFi power save disabled and service enabled."
-else
-  echo "wifi-powersave-off service already exists."
-fi
+# 1. Disable WiFi Power Save Mode
+sudo nmcli connection modify "preconfigured" 802-11-wireless.powersave 2
+sudo systemctl restart NetworkManager
 
 # 2. Prompt to set CPU isolation manually
 echo
@@ -41,7 +20,6 @@ echo "************************************************"
 read -p "Press Enter to continue after you have finished editing..."
 
 # 3. Clone and install raspicode software
-
 sudo apt install python3-setuptools python3-flask
 if [ ! -d raspicode ]; then
   git clone https://github.com/latchdevel/raspicode.git
